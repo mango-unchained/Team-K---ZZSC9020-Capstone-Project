@@ -1,0 +1,7 @@
+astral
+holidays
+numpy
+pandas
+pymongo
+pytz
+scikit-learn
