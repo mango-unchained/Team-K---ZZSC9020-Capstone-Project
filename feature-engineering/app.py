@@ -1,19 +1,20 @@
+"""
+This script performs feature engineering on the demand and temperature data from MongoDB.
+"""
+
 import os
-import holidays
+from datetime import datetime
 import math as m
-import numpy as np
+import holidays
 import pandas as pd
 import pytz
 from astral import LocationInfo
 from astral.sun import sun
-from bson.son import SON
-from datetime import datetime
 from pymongo.database import Database
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-from sklearn.experimental import enable_iterative_imputer
+from sklearn.experimental import enable_iterative_imputer # noqa
 from sklearn.impute import IterativeImputer
-from typing import List
 
 # Define constants
 STATE_TIMEZONES = {
@@ -23,24 +24,10 @@ STATE_TIMEZONES = {
     'VIC': 'Australia/Melbourne',
 }
 
-# Define outputs columns
-OUTPUT_COLUMNS = [
-    'datetime',
-    'state',
-    'demand',
-    'temperature',
-    'year',
-    'month',
-    'day_of_month',
-    'day_of_week',
-    'period_of_day',
-    'is_weekday',
-    'is_public_holiday',
-    'is_daylight'
-]
-
 
 class FeatureEngineering:
+    """The FeatureEngineering class performs feature engineering on demand and temperature data
+    """
     def __init__(
         self,
         url: str,
@@ -100,6 +87,26 @@ class FeatureEngineering:
             bool: Indicates if the collection exists
         """
         return collection_name in self.db.list_collection_names()
+    
+    def read_mongo_data(self, collection_name: str) -> pd.DataFrame:
+        """Reads data from a MongoDB collection into a pandas DataFrame
+
+        Args:
+            collection_name (str): The name of the collection to read from
+
+        Returns:
+            pd.DataFrame: The data from the collection as a DataFrame
+        """
+        # Query all documents in the collection
+        data = self.db[collection_name].find()
+
+        # Convert to pandas DataFrame
+        df = pd.DataFrame(list(data))
+
+        # Optional: If you don't want the MongoDB '_id' in your DataFrame
+        df.drop('_id', axis=1, inplace=True)
+
+        return df
 
     def is_public_holiday(self, date: datetime, state: str) -> bool:
         """Determines if a given date is a public holiday in a given state
@@ -132,157 +139,137 @@ class FeatureEngineering:
         s = sun(city_info.observer, date=local_datetime, tzinfo=local_timezone)
         
         return s['sunrise'] < local_datetime < s['sunset']
+    
+    def impute_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Imputes missing values in a DataFrame using an iterative imputer
 
-    def get_feature_batches(self) -> List:
-        """Returns a list of unique state, year, and month combinations to batch process the feature engineering
+        Args:
+            df (pd.DataFrame): The DataFrame to impute missing values in
 
         Returns:
-            List: A list of unique state, year, and month combinations
+            pd.DataFrame: The DataFrame with imputed missing values
         """
-        # Define the pipeline to get unique state and year combinations
-        pipeline = [
-            {
-                "$group": {
-                    "_id": {
-                        "state": "$state",
-                        "year": {"$year": "$DATETIME"},
-                        "month": {"$month": "$DATETIME"}
-                    }
-                }
-            },
-            {
-                "$project": {
-                    "_id": 0,
-                    "state": "$_id.state",
-                    "year": "$_id.year",
-                    "month": "$_id.month"
-                }
-            },
-            {
-                "$sort": SON([("state", 1), ("year", 1), ("month", 1)])  # Sorting by state then year
-            }
-        ]
+        imputer_input = df.drop(['state', 'DATETIME'], axis=1)
+
+        # Initialize the imputer
+        imputer = IterativeImputer(max_iter=10, random_state=0)
+
+        # Impute the missing values
+        df_imputed = pd.DataFrame(imputer.fit_transform(imputer_input), columns=imputer_input.columns)
         
-        # Execute the pipeline and return the results
-        return list(self.db[self.demand_collection_name].aggregate(pipeline))
+        # Add the 'state' and 'DATETIME' columns back to the DataFrame
+        df_imputed['state'] = df['state']
+        df_imputed['DATETIME'] = df['DATETIME']
+
+        return df_imputed
+    
+    def transform_periodic_values(self, value: int, period: int) -> float:
+        """Transforms a periodic value using a sine function
+
+        Args:
+            value (int): The value to transform
+            period (int): The period of the sine function
+
+        Returns:
+            float: The transformed value
+        """
+        return m.sin(2 * m.pi * value / period)
+    
+    def add_lagged_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Adds lagged features for specified columns in the DataFrame for 1 hour ahead and 24 hours ahead.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to add lagged features to.
+
+        Returns:
+            pd.DataFrame: The DataFrame with added lagged features.
+        """
+        # Make sure df is sorted by 'state' and 'DATETIME' to ensure logical shifts
+        df = df.sort_values(by=['state', 'DATETIME'])
+        
+        # Columns to create lagged versions of
+        lag_columns = ['year', 'month', 'day_of_month', 'day_of_week', 'TOTALDEMAND']
+
+        # Create lagged columns for 1 hour ahead and 24 hours ahead
+        for col in lag_columns:
+            df[f'h1_{col}'] = df.groupby('state')[col].shift(-2)  # 1 hour ahead
+            df[f'h24_{col}'] = df.groupby('state')[col].shift(-48)  # 24 hours ahead
+        
+        return df
 
     def run(self):
         """Runs the feature engineering pipeline
-
-        Raises:
-            e: A generic exception if an error occurs
         """
         try:
-            # Get the feature batches
-            feature_batches = self.get_feature_batches()
+            # Read the demand data from MongoDB
+            demand_data = self.read_mongo_data(self.demand_collection_name)
+            print("Successfully read demand data from MongoDB")
             
-            # Drop the collection so it can be re-created
-            self.drop_collection(self.target_collection_name)
-
-            # Iterate through the feature batches
-            iteration = 1
-            for doc in feature_batches:
-                print(f"Processing iteration {iteration} / {len(feature_batches)} for: {doc['state']}, {doc['year']}, {doc['month']}")
-                state, year, month = doc['state'], doc['year'], doc['month']
-                
-                # Defines a pipeline used to filter the data
-                pipeline = [
-                    {"$addFields": {
-                        "year": {"$year": "$DATETIME"},
-                        "month": {"$month": "$DATETIME"}
-                    }},
-                    {"$match": {
-                        "state": state,
-                        "year": year,
-                        "month": month
-                    }}
-                ]
-                
-                # Convert the data to a DataFrame
-                demand_data = pd.DataFrame(list(self.db[self.demand_collection_name].aggregate(pipeline)))
-                temperature_data = pd.DataFrame(list(self.db[self.temperature_collection_name].aggregate(pipeline)))
-                
-                # Handles the coversion of datetime for demand data
-                if 'DATETIME' in demand_data.columns:
-                    demand_data['datetime'] = pd.to_datetime(demand_data['DATETIME'])
-                    demand_data.drop(columns=['DATETIME'], inplace=True)
-                else:
-                    demand_data['datetime'] = pd.NaT  # Assign NaT where 'DATETIME' does not exist
-
-                # Handles the coversion of datetime for temperature data
-                if 'DATETIME' in temperature_data.columns:
-                    temperature_data['datetime'] = pd.to_datetime(temperature_data['DATETIME'])
-                    temperature_data.drop(columns=['DATETIME'], inplace=True)
-                else:
-                    temperature_data['datetime'] = pd.NaT  # Assign NaT for missing 'DATETIME'
-
-                # Ensuring 'state' is present in temperature_data so that the merge can be performed
-                if 'state' not in temperature_data.columns:
-                    temperature_data['state'] = state
-
-                # Merge the data
-                combined_data = pd.merge(demand_data, temperature_data, on=['datetime', 'state'], how='outer')
-                
-                # Rename columns
-                combined_data.rename(columns={'TOTALDEMAND': 'demand', 'TEMPERATURE': 'temperature'}, inplace=True)
-                
-                # Impute missing values for demand and temperature using MICE
-                if "temperature" not in combined_data.columns:
-                    combined_data["temperature"] = np.nan
-
-                # Only proceed with MICE imputation if both columns are present and not entirely NaN
-                if not combined_data[['demand', 'temperature']].isna().all().any():
-                    imputer = IterativeImputer(max_iter=10, random_state=0)
-                    imputed_values = imputer.fit_transform(combined_data[['demand', 'temperature']])
-                    combined_data[['demand', 'temperature']] = imputed_values
-
-                # Additional feature engineering and transformation
-                combined_data['year'] = combined_data['datetime'].dt.year
-                combined_data['month'] = combined_data['datetime'].dt.month
-                combined_data['day_of_month'] = combined_data['datetime'].dt.day
-                combined_data['day_of_week'] = combined_data['datetime'].dt.dayofweek
-                combined_data['is_weekday'] = combined_data['day_of_week'] < 5
-                combined_data['period_of_day'] = combined_data['datetime'].dt.hour * 2 + combined_data['datetime'].dt.minute // 30 + 1
-                combined_data['is_public_holiday'] = combined_data['datetime'].apply(lambda x: self.is_public_holiday(x, state))
-                combined_data['is_daylight'] = combined_data['datetime'].apply(lambda x: self.is_daylight(x, state))
-
-                # Reduce to output columns
-                features = combined_data[OUTPUT_COLUMNS]
-
-                # Insert processed data into MongoDB
-                feature_docs = features.to_dict('records')
-                self.db[self.target_collection_name].insert_many(feature_docs)
-
-                iteration += 1
-
+            # Read the temperature data from MongoDB
+            temperature_data = self.read_mongo_data(self.temperature_collection_name)
+            print("Successfully read temperature data from MongoDB")
+            
+            # Drop the location column from the temperature data
+            temperature_data.drop('LOCATION', axis=1, inplace=True)
+            
+            # Left join the demand and temperature data on the 'DATETIME' and state columns
+            df = pd.merge(demand_data, temperature_data, on=['state', 'DATETIME'], how='left')
+            
+            # Fill in the missing temperature and demand values using an iterative imputer
+            df = self.impute_missing_values(df)
+            
+            # Convert the 'DATETIME' column to a datetime object
+            df['DATETIME'] = pd.to_datetime(df['DATETIME'])
+            
+            # Add additional features to the DataFrame
+            df['year'] = df['DATETIME'].dt.year
+            df['month'] = df['DATETIME'].dt.month.apply(lambda x: self.transform_periodic_values(x, 12))
+            df['day_of_month'] = df['DATETIME'].dt.day
+            df['day_of_week'] = df['DATETIME'].dt.dayofweek.apply(lambda x: self.transform_periodic_values(x, 7))
+            df['is_weekday'] = df['day_of_week'] < 5
+            df['period_of_day'] = df['DATETIME'].apply(lambda x: m.sin(2 * m.pi * ((x.hour * 2) + (x.minute // 30)) / 48))
+            df['is_public_holiday'] = df.apply(lambda x: self.is_public_holiday(x['DATETIME'], x['state']), axis=1)
+            df['is_daylight'] = df.apply(lambda x: self.is_daylight(x['DATETIME'], x['state']), axis=1)
+            
+            # Add lagged features to the DataFrame
+            df = self.add_lagged_features(df)
+            
+            # If the target collection already exists, drop it
+            if self.check_collection_exists(self.target_collection_name):
+                self.drop_collection(self.target_collection_name)
+            
+            # Write the result to a new collection in MongoDB
+            self.db[self.target_collection_name].insert_many(df.to_dict(orient='records'))
+            print("Successfully wrote the transformed data to MongoDB")
+            
         except Exception as e:
             print(f"An error occurred: {e}")
-            raise e
-        
+            
         finally:
+            # Close the connection to the MongoDB client
             self.close_connection()
-            print("Connection to Mongo client closed successfully")
+
 
 if __name__ == "__main__":
     # Define constants
     user = os.getenv('MONGO_USER')
     password = os.getenv('MONGO_PASSWORD')
-    url = f"mongodb+srv://{user}:{password}@project-data.cfluj8d.mongodb.net/?retryWrites=true&w=majority&appName=project-data"
-    db_name = 'data'
-    demand_collection_name = 'total_demand'
-    temperature_collection_name = 'temperature'
-    target_collection_name = 'features'
+    URL = f"mongodb+srv://{user}:{password}@project-data.fyzivf2.mongodb.net/?retryWrites=true&w=majority&appName=project-data"
+    DB_NAME = 'data'
+    DEMAND_COLLECTION_NAME = 'total_demand'
+    TEMPERATURE_COLLECTION_NAME = 'temperature'
+    TARGET_COLLECTION_NAME = 'features'
     
     # Instantiate the class
     feature_engineering = FeatureEngineering(
-        url,
-        db_name,
-        demand_collection_name,
-        temperature_collection_name,
-        target_collection_name
+        URL,
+        DB_NAME,
+        DEMAND_COLLECTION_NAME,
+        TEMPERATURE_COLLECTION_NAME,
+        TARGET_COLLECTION_NAME
     )
     
     # Execute the pipeline
     feature_engineering.run()
     print("Feature Engineering script executed successfully")
-

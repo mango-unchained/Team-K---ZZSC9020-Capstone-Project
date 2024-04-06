@@ -1,6 +1,5 @@
 astral
 holidays
-numpy
 pandas
 pymongo
 pytz
