@@ -235,6 +235,9 @@ class FeatureEngineering:
             # Add lagged features to the DataFrame
             df = self.add_lagged_features(df)
             
+            # Remove any rows with missing values
+            df.dropna(inplace=True)
+            
             # If the target collection already exists, drop it
             if self.check_collection_exists(self.target_collection_name):
                 self.drop_collection(self.target_collection_name)
