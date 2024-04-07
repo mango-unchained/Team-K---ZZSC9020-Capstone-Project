@@ -192,6 +192,12 @@ class FeatureEngineering:
         lag_columns = ['year', 'month', 'day_of_month', 'day_of_week', 'TOTALDEMAND']
 
         # Create lagged columns for 1 hour ahead and 24 hours ahead
+        # for hours in [1, 24]:
+        #     hours_ahead = df.copy()[['DATETIME', *lag_columns]]
+        #     hours_ahead.columns = ['DATETIME', *[f'h{hours}_{col}' for col in lag_columns]]
+        #     hours_ahead.DATETIME -= timedelta(hours=hours)
+        #     df = pd.merge(df, ahead, how='left', on=['DATETIME', 'state'])
+        
         for col in lag_columns:
             df[f'h1_{col}'] = df.groupby('state')[col].shift(-2)  # 1 hour ahead
             df[f'h24_{col}'] = df.groupby('state')[col].shift(-48)  # 24 hours ahead
