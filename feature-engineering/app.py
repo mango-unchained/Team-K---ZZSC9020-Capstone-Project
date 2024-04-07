@@ -203,6 +203,27 @@ class FeatureEngineering:
             df[f'h24_{col}'] = df.groupby('state')[col].shift(-48)  # 24 hours ahead
         
         return df
+    
+    def add_shifted_demand_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Adds shifted demand features to the DataFrame for every 30 minutes up to 24 hours more efficiently.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to add shifted features to.
+
+        Returns:
+            pd.DataFrame: The DataFrame with added shifted features.
+        """
+        # Ensure DataFrame is sorted by 'DATETIME'
+        df.sort_values('DATETIME', inplace=True)
+
+        # Calculate the shifts for every 30 minutes up to 24 hours (48 shifts)
+        for i in range(1, 49):
+            shift_minutes = 30 * i
+            # Shift 'TOTALDEMAND' directly without creating multiple intermediate DataFrames
+            df[f'TM{shift_minutes}'] = df.groupby('state')['TOTALDEMAND'].shift(-i)
+
+        return df
 
     def run(self):
         """Runs the feature engineering pipeline
@@ -240,6 +261,12 @@ class FeatureEngineering:
             
             # Add lagged features to the DataFrame
             df = self.add_lagged_features(df)
+            
+            # Add shifted demand features to the DataFrame
+            df = self.add_shifted_demand_features(df)
+            
+            # Remove any rows with missing values
+            df.dropna(inplace=True)
             
             # If the target collection already exists, drop it
             if self.check_collection_exists(self.target_collection_name):
