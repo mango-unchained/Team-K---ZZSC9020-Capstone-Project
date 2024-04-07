@@ -190,39 +190,11 @@ class FeatureEngineering:
         
         # Columns to create lagged versions of
         lag_columns = ['year', 'month', 'day_of_month', 'day_of_week', 'TOTALDEMAND']
-
-        # Create lagged columns for 1 hour ahead and 24 hours ahead
-        # for hours in [1, 24]:
-        #     hours_ahead = df.copy()[['DATETIME', *lag_columns]]
-        #     hours_ahead.columns = ['DATETIME', *[f'h{hours}_{col}' for col in lag_columns]]
-        #     hours_ahead.DATETIME -= timedelta(hours=hours)
-        #     df = pd.merge(df, ahead, how='left', on=['DATETIME', 'state'])
         
         for col in lag_columns:
             df[f'h1_{col}'] = df.groupby('state')[col].shift(-2)  # 1 hour ahead
             df[f'h24_{col}'] = df.groupby('state')[col].shift(-48)  # 24 hours ahead
         
-        return df
-    
-    def add_shifted_demand_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Adds shifted demand features to the DataFrame for every 30 minutes up to 24 hours more efficiently.
-
-        Args:
-            df (pd.DataFrame): The DataFrame to add shifted features to.
-
-        Returns:
-            pd.DataFrame: The DataFrame with added shifted features.
-        """
-        # Ensure DataFrame is sorted by 'DATETIME'
-        df.sort_values('DATETIME', inplace=True)
-
-        # Calculate the shifts for every 30 minutes up to 24 hours (48 shifts)
-        for i in range(1, 49):
-            shift_minutes = 30 * i
-            # Shift 'TOTALDEMAND' directly without creating multiple intermediate DataFrames
-            df[f'TM{shift_minutes}'] = df.groupby('state')['TOTALDEMAND'].shift(-i)
-
         return df
 
     def run(self):
@@ -239,6 +211,9 @@ class FeatureEngineering:
             
             # Drop the location column from the temperature data
             temperature_data.drop('LOCATION', axis=1, inplace=True)
+            
+            # Take the average of temperature for each datetime and state
+            temperature_data = temperature_data.groupby(['state', 'DATETIME']).mean().reset_index()
             
             # Left join the demand and temperature data on the 'DATETIME' and state columns
             df = pd.merge(demand_data, temperature_data, on=['state', 'DATETIME'], how='left')
@@ -262,11 +237,11 @@ class FeatureEngineering:
             # Add lagged features to the DataFrame
             df = self.add_lagged_features(df)
             
-            # Add shifted demand features to the DataFrame
-            df = self.add_shifted_demand_features(df)
-            
             # Remove any rows with missing values
             df.dropna(inplace=True)
+            
+            # Remove duplicates
+            df.drop_duplicates(inplace=True)
             
             # If the target collection already exists, drop it
             if self.check_collection_exists(self.target_collection_name):
@@ -286,8 +261,8 @@ class FeatureEngineering:
 
 if __name__ == "__main__":
     # Define constants
-    user = os.getenv('MONGO_USER')
-    password = os.getenv('MONGO_PASSWORD')
+    user = os.getenv('MONGO_USER', input('Username: '))
+    password = os.getenv('MONGO_PASSWORD', input('Password: '))
     URL = f"mongodb+srv://{user}:{password}@project-data.fyzivf2.mongodb.net/?retryWrites=true&w=majority&appName=project-data"
     DB_NAME = 'data'
     DEMAND_COLLECTION_NAME = 'total_demand'
