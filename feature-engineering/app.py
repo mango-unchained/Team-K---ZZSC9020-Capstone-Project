@@ -3,7 +3,7 @@ This script performs feature engineering on the demand and temperature data from
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import math as m
 import holidays
 import pandas as pd
@@ -187,15 +187,29 @@ class FeatureEngineering:
         """
         # Make sure df is sorted by 'state' and 'DATETIME' to ensure logical shifts
         df = df.sort_values(by=['state', 'DATETIME'])
-        
-        # Columns to create lagged versions of
+
+        # Specify the columns for which to create lagged versions, excluding 'state'
         lag_columns = ['year', 'month', 'day_of_month', 'day_of_week', 'TOTALDEMAND']
         
-        for col in lag_columns:
-            df[f'h1_{col}'] = df.groupby('state')[col].shift(-2)  # 1 hour ahead
-            df[f'h24_{col}'] = df.groupby('state')[col].shift(-48)  # 24 hours ahead
+        # Initial DataFrame to join lagged features onto
+        df_final = df.copy()
         
-        return df
+        for hours in [1, 24]:
+            # Copy relevant columns, including 'state' for merging
+            hours_ahead = df[['state', 'DATETIME'] + lag_columns].copy()
+            
+            # Adjust 'DATETIME' for the lag and rename columns to indicate the lag
+            hours_ahead['DATETIME'] -= timedelta(hours=hours)
+            col_rename = {col: f'h{hours}_{col}' for col in lag_columns}  # Create renaming dictionary
+            hours_ahead.rename(columns=col_rename, inplace=True)
+            
+            # Define columns to merge (exclude original lag_columns from 'df', include only new lagged columns)
+            cols_to_merge = ['state', 'DATETIME'] + [f'h{hours}_{col}' for col in lag_columns]
+            
+            # Merge the lagged columns based on 'state' and 'DATETIME'
+            df_final = pd.merge(df_final, hours_ahead[cols_to_merge], on=['state', 'DATETIME'], how='left')
+
+        return df_final
 
     def run(self):
         """Runs the feature engineering pipeline
@@ -261,8 +275,8 @@ class FeatureEngineering:
 
 if __name__ == "__main__":
     # Define constants
-    user = os.getenv('MONGO_USER', input('Username: '))
-    password = os.getenv('MONGO_PASSWORD', input('Password: '))
+    user = os.getenv('MONGO_USER') or input('Username: ')
+    password = os.getenv('MONGO_PASSWORD') or input('Password: ')
     URL = f"mongodb+srv://{user}:{password}@project-data.fyzivf2.mongodb.net/?retryWrites=true&w=majority&appName=project-data"
     DB_NAME = 'data'
     DEMAND_COLLECTION_NAME = 'total_demand'
