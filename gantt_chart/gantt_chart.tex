@@ -1,0 +1,100 @@
+\usepackage{pgfgantt}
+
+\begin{document}
+
+\begin{ganttchart}[
+    vgrid={*{6}{draw=none}, dotted}, % 7-day week with a dotted line to mark weeks
+    hgrid,
+    time slot format=isodate,
+    x unit=0.325cm, % Adjust the width of each day
+    y unit title=0.7cm,
+    y unit chart=0.6cm,
+    title/.style={fill=blue!20, draw=none, text=black},
+    title label font=\scriptsize,
+    bar/.style={fill=blue!50},
+    bar label font=\normalsize,
+    group/.style={draw=black, fill=green!30},
+    group right shift=0,
+    group top shift=.6,
+    group height=.3,
+    group peaks tip position=0,
+    milestone/.style={fill=orange!75!black, rounded corners=3pt, draw=black},
+    milestone label font=\normalsize\color{black}
+    ]{2024-03-04}{2024-04-29}
+
+    % Phase Labels
+    \gantttitle{Discover}{14}
+    \gantttitle{Design}{21}
+    \gantttitle{Deliver}{21} \\
+    
+    % Week labels
+    \gantttitle{O-Week}{7}
+    \gantttitle{Week 1}{7}
+    \gantttitle{Week 2}{7}
+    \gantttitle{Week 3}{7}
+    \gantttitle{Week 4}{7}
+    \gantttitle{Week 5}{7}
+    \gantttitle{Week 6}{7}
+    \gantttitle{Week 7}{7} \\
+
+    % Date labels
+    \gantttitle{04/03 - 10/03}{7}
+    \gantttitle{11/03 - 17/03}{7}
+    \gantttitle{18/03 - 24/03}{7}
+    \gantttitle{25/03 - 31/03}{7}
+    \gantttitle{01/04 - 07/04}{7}
+    \gantttitle{08/04 - 14/04}{7}
+    \gantttitle{15/04 - 21/04}{7}
+    \gantttitle{22/04 - 28/04}{7} \\
+    
+    % Project Governance Stream
+    \ganttgroup{Project Governance}{2024-03-04}{2024-04-29} \\
+    
+    \ganttmilestone{Kick-off Meeting}{2024-03-08} \\
+    
+    \ganttmilestone{Leadership Meeting}{2024-03-11}
+    \ganttmilestone{}{2024-03-18}
+    \ganttmilestone{}{2024-03-25}
+    \ganttmilestone{}{2024-04-01}
+    \ganttmilestone{}{2024-04-08}
+    \ganttmilestone{}{2024-04-15} \\
+    
+    \ganttmilestone{Weekly Team Meeting}{2024-03-15}
+    \ganttmilestone{}{2024-03-22}
+    \ganttmilestone{}{2024-03-29}
+    \ganttmilestone{}{2024-04-05}
+    \ganttmilestone{}{2024-04-12}
+    \ganttmilestone{}{2024-04-19} \\
+    
+    \ganttmilestone{Weekly Task Planning}{2024-03-08}{2024-03-08}
+    \ganttmilestone{}{2024-03-15}
+    \ganttmilestone{}{2024-03-22}
+    \ganttmilestone{}{2024-03-29}
+    \ganttmilestone{}{2024-04-05}
+    \ganttmilestone{}{2024-04-12}
+    \ganttmilestone{}{2024-04-19} \\
+    
+    \ganttmilestone{Minutes Consolidation}{2024-03-09}
+    \ganttmilestone{}{2024-03-16}
+    \ganttmilestone{}{2024-03-23}
+    \ganttmilestone{}{2024-03-30}
+    \ganttmilestone{}{2024-04-06}
+    \ganttmilestone{}{2024-04-13}
+    \ganttmilestone{}{2024-04-20} \\
+    
+    \ganttmilestone{Project Review Meeting}{2024-04-22}{2024-04-22} \\
+    
+    % Solution Delivery Stream
+    \ganttgroup{Solution Delivery}{2024-03-04}{2024-04-29} \\
+    \ganttbar{Additional Source Identification}{2024-03-04}{2024-03-17} \\
+    \ganttbar{Literature Review}{2024-03-04}{2024-03-22} \\
+    \ganttbar{Model Architecture Selection}{2024-03-10}{2024-03-25} \\
+    \ganttbar{Data Exploration}{2024-03-10}{2024-03-24} \\
+    \ganttbar{Data Cleaning}{2024-03-18}{2024-03-31} \\
+    \ganttbar{Feature Engineering}{2024-03-18}{2024-04-07} \\
+    \ganttbar{Model Training \& Evaluation}{2024-03-25}{2024-04-20} \\
+    \ganttbar{Report Writing}{2024-03-25}{2024-04-20} \\
+    \ganttbar{Presentation Preparation}{2024-04-07}{2024-04-24}
+\end{ganttchart}
+
+\end{document}

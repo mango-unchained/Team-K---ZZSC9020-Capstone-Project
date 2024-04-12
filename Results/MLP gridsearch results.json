@@ -1,0 +1,9 @@
+{
+    "opt_params": {
+        "weight_decay": 1e-05,
+        "beta_1": 0.95
+    },
+    "params": {
+        "batch_size": 256
+    }
+}
