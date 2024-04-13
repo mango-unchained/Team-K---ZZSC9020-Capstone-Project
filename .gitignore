@@ -7,3 +7,4 @@ poetry.lock
 pyproject.toml
 Project Notes.pages
 __*.ipynb
+*.png

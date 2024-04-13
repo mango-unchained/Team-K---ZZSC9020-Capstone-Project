@@ -1,0 +1,62 @@
+@startuml
+left to right direction
+
+' Define the MongoDB box and place file icons inside it
+database "MongoDB" {
+  file "total_demand" as TD
+  file "temperature" as TEMP
+  file "features" as Features
+}
+
+' Define the Python Packages box and place agent icons inside it
+package "Python Packages" {
+    node "astral" as Astral
+    node "holidays" as Holidays
+}
+
+' Define the Merge Datasets component
+rectangle "Merge Datasets" as Merge
+
+' Define Impute missing values
+rectangle "Impute missing\nvalues" as Impute
+
+' Define split datetime
+rectangle "Split datetime\nfeatures" as Split
+
+' Define Calculate daylight
+rectangle "Calculate daylight" as Daylight
+
+' Define Calculate public holiday
+rectangle "Calculate public\nholidays" as PublicHoliday
+
+' Define Calculate public holiday
+rectangle "Transform periodic\nfeatures" as Periodic
+
+' Define combine features
+rectangle "Combine features" as Combine
+
+' Define add lagged features
+rectangle "Add lagged\nfeatures" as Lagged
+
+' Define write to database
+rectangle "Write to\ndatabase" as Write
+
+' Draw arrows from file icons to the Merge Datasets
+TD --> Merge
+TEMP --> Merge
+Astral ----> Daylight
+Holidays ----> PublicHoliday
+Merge --> Impute
+Impute --> Split
+Impute --> Daylight
+Impute --> PublicHoliday
+Split --> Periodic
+Periodic --> Combine
+PublicHoliday ---> Combine
+Daylight ---> Combine
+Combine --> Lagged
+Lagged --> Write
+Write --> Features
+
+
+@enduml
