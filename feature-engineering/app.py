@@ -243,7 +243,7 @@ class FeatureEngineering:
             df['month'] = df['DATETIME'].dt.month.apply(lambda x: self.transform_periodic_values(x, 12))
             df['day_of_month'] = df['DATETIME'].dt.day
             df['day_of_week'] = df['DATETIME'].dt.dayofweek.apply(lambda x: self.transform_periodic_values(x, 7))
-            df['is_weekday'] = df['day_of_week'] < 5
+            df['is_weekday'] = df['DATETIME'].dt.dayofweek < 5
             df['period_of_day'] = df['DATETIME'].apply(lambda x: m.sin(2 * m.pi * ((x.hour * 2) + (x.minute // 30)) / 48))
             df['is_public_holiday'] = df.apply(lambda x: self.is_public_holiday(x['DATETIME'], x['state']), axis=1)
             df['is_daylight'] = df.apply(lambda x: self.is_daylight(x['DATETIME'], x['state']), axis=1)
