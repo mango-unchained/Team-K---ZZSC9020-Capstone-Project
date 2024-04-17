@@ -294,7 +294,7 @@ if __name__ == "__main__":
     SOURCE_DATA = '/Users/dsartor/Repos/uni/Team-K---ZZSC9020-Capstone-Project/data/modelling_data.csv'
     
     # Instantiate the class
-    feature_engineering = DataVisualisations(
+    data_visualisations = DataVisualisations(
         URL,
         DB_NAME,
         FEATURE_COLLECTION_NAME,
@@ -303,5 +303,5 @@ if __name__ == "__main__":
     )
     
     # Execute the pipeline
-    feature_engineering.run()
-    print("Feature Engineering script executed successfully")
+    data_visualisations.run()
+    print("Data visualisations generated successfully!")
