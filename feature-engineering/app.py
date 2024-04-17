@@ -34,13 +34,15 @@ class FeatureEngineering:
         db_name: str,
         demand_collection_name: str,
         temperature_collection_name: str,
-        target_collection_name: str
+        target_collection_name: str,
+        local_output_path: str = None
     ) -> None:
         self.client = self.mongo_client(url)
         self.db = self.mongo_database(db_name)
         self.demand_collection_name = demand_collection_name
         self.temperature_collection_name = temperature_collection_name
         self.target_collection_name = target_collection_name
+        self.local_output_path = local_output_path
         
     def mongo_client(self, url: str) -> MongoClient:
         """Establishes a connection to a MongoDB client
@@ -138,7 +140,7 @@ class FeatureEngineering:
         city_info = LocationInfo(timezone=STATE_TIMEZONES[state])
         s = sun(city_info.observer, date=local_datetime, tzinfo=local_timezone)
         
-        return s['sunrise'] < local_datetime < s['sunset']
+        return  not (s['sunset'] < local_datetime < s['sunrise'])
     
     def impute_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
         """Imputes missing values in a DataFrame using an iterative imputer
@@ -257,13 +259,20 @@ class FeatureEngineering:
             # Remove duplicates
             df.drop_duplicates(inplace=True)
             
-            # If the target collection already exists, drop it
-            if self.check_collection_exists(self.target_collection_name):
-                self.drop_collection(self.target_collection_name)
+            # If an output path is provided, write the transformed data to a CSV file
+            if self.local_output_path:
+                df.to_csv(self.local_output_path, index=False)
+                print(f"Successfully wrote the transformed data to: {self.local_output_path}")
             
-            # Write the result to a new collection in MongoDB
-            self.db[self.target_collection_name].insert_many(df.to_dict(orient='records'))
-            print("Successfully wrote the transformed data to MongoDB")
+            # Otherwise, write the transformed data to a new collection in MongoDB
+            else:
+                # If the target collection already exists, drop it
+                if self.check_collection_exists(self.target_collection_name):
+                    self.drop_collection(self.target_collection_name)
+                
+                # Write the result to a new collection in MongoDB
+                self.db[self.target_collection_name].insert_many(df.to_dict(orient='records'))
+                print("Successfully wrote the transformed data to MongoDB")
             
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -282,6 +291,7 @@ if __name__ == "__main__":
     DEMAND_COLLECTION_NAME = 'total_demand'
     TEMPERATURE_COLLECTION_NAME = 'temperature'
     TARGET_COLLECTION_NAME = 'features'
+    LOCAL_OUTPUT_PATH = '/Users/dsartor/Repos/uni/Team-K---ZZSC9020-Capstone-Project/data/modelling_data.csv'
     
     # Instantiate the class
     feature_engineering = FeatureEngineering(
@@ -289,7 +299,8 @@ if __name__ == "__main__":
         DB_NAME,
         DEMAND_COLLECTION_NAME,
         TEMPERATURE_COLLECTION_NAME,
-        TARGET_COLLECTION_NAME
+        TARGET_COLLECTION_NAME,
+        LOCAL_OUTPUT_PATH
     )
     
     # Execute the pipeline
