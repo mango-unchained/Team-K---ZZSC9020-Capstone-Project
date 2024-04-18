@@ -177,7 +177,7 @@ class DataVisualisations:
             os.makedirs(self.target_directory)
 
         # Save the plot to a PDF file
-        plt.savefig(f'{self.target_directory}/demand_vs_temperature_scatter.pdf')
+        plt.savefig(f'{self.target_directory}/demand_vs_temperature_scatter.png')
 
         # Close the plot to free up memory
         plt.close()
@@ -196,6 +196,7 @@ class DataVisualisations:
         configurations = [
             {'column_name': 'month', 'labels': ["January", "February", "March", "April", "May", "June", 
                                                 "July", "August", "September", "October", "November", "December"], 'column_is_date': True},
+            {'column_name': 'day_of_week', 'labels': ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], 'column_is_date': True},
             {'column_name': 'is_weekday', 'labels': ['Weekday', 'Weekend'], 'column_is_date': False},
             {'column_name': 'is_public_holiday', 'labels': ['Public Holiday', 'Normal Day'], 'column_is_date': False},
             {'column_name': 'is_daylight', 'labels': ['Day', 'Night'], 'column_is_date': False}
@@ -267,13 +268,13 @@ class DataVisualisations:
                 features = self.read_mongo_data(self.feature_collection_name)
             
             # Generate histograms of demand data
-            self.generate_histograms(features)
+            # self.generate_histograms(features)
             
             # Generate scatter plots of demand vs temperature data
             self.generate_scatter_plots(features)
             
             # Generate a Tufte-style plot of demand by day of the week
-            self.generate_tufte_plots(features)
+            # self.generate_tufte_plots(features)
             
         except Exception as e:
             print(f"An error occurred: {e}")
