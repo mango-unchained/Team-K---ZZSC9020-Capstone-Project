@@ -1,5 +1,5 @@
 """
-This script performs feature engineering on the demand and temperature data from MongoDB.
+This script performs data visualisations on the data stored in the MongoDB database.
 """
 
 import os
@@ -266,11 +266,11 @@ class DataVisualisations:
             else:
                 features = self.read_mongo_data(self.feature_collection_name)
             
-            # # Generate histograms of demand data
-            # self.generate_histograms(features)
+            # Generate histograms of demand data
+            self.generate_histograms(features)
             
-            # # Generate scatter plots of demand vs temperature data
-            # self.generate_scatter_plots(features)
+            # Generate scatter plots of demand vs temperature data
+            self.generate_scatter_plots(features)
             
             # Generate a Tufte-style plot of demand by day of the week
             self.generate_tufte_plots(features)
