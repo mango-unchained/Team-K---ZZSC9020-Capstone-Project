@@ -1,8 +1,0 @@
-{
-    "est_params": {
-        "hidden_L1": 0.1,
-        "output_L1": 0.0
-    },
-    "opt_params": {},
-    "params": {}
-}
