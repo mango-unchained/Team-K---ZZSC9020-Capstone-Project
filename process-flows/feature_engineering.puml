@@ -1,11 +1,16 @@
 @startuml
 left to right direction
+title Feature Engineering Pipeline
 
 ' Define the MongoDB box and place file icons inside it
 database "MongoDB" {
   file "total_demand" as TD
   file "temperature" as TEMP
   file "features" as Features
+  TD -[hidden]-> TEMP
+}
+skinparam database {
+  BackgroundColor lightGreen
 }
 
 ' Define the Python Packages box and place agent icons inside it
@@ -13,9 +18,15 @@ package "Python Packages" {
     node "astral" as Astral
     node "holidays" as Holidays
 }
+skinparam package {
+  BackgroundColor lightYellow
+}
 
 ' Define the Merge Datasets component
 rectangle "Merge Datasets" as Merge
+skinparam rectangle {
+  BackgroundColor lightBlue
+}
 
 ' Define Impute missing values
 rectangle "Impute missing\nvalues" as Impute
@@ -58,5 +69,15 @@ Combine --> Lagged
 Lagged --> Write
 Write --> Features
 
+' Custom colors for specific components
+skinparam rectangle {
+  BackgroundColor lightBlue
+}
+skinparam database {
+  BackgroundColor lightGreen
+}
+skinparam node {
+  BackgroundColor lightYellow
+}
 
 @enduml
