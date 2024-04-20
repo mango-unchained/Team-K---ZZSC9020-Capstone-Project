@@ -1,0 +1,32 @@
+\begin{table}[ht]
+\centering
+\setlength{\tabcolsep}{4pt} % Adjust the space between columns
+\renewcommand{\arraystretch}{1.5}  % Increase the space between rows
+\small % or \scriptsize or \footnotesize to reduce the font size
+\begin{tabular}{@{}lp{2.3cm}llp{3.2cm}@{}} % Adjust column widths
+\toprule
+Field Name & Description & Data Type & Example & Statistics \\
+\midrule
+DATETIME & The UTC date-time of the demand recording in 30 min increments & DATETIME & 2010-01-01 00:00:00& 
+\textbullet\ Maximum: 2021-03-18 00:00:00\newline
+\textbullet\ Minimum: 2010-01-01 00:00:00\newline
+\textbullet\ NULL Count: 0 \\
+
+TOTALDEMAND & The total demand for a given state in the 30 min time interval & Float & 5561.21 & 
+\textbullet\ Maximum: 14579.86\newline
+\textbullet\ Minimum: 21.89\newline
+\textbullet\ Mean: 5194.14\newline
+\textbullet\ Std. Dev.: 2606.72\newline
+\textbullet\ NULL Count: 0 \\
+
+state & The Australian state the reading corresponds to & \parbox[t]{2.3cm}{Enumerated String:\newline
+\textbullet\ QLD\newline
+\textbullet\ NSW\newline
+\textbullet\ VIC\newline
+\textbullet\ SA} & QLD &
+\textbullet\ NULL Count: 0 \\
+\bottomrule
+\end{tabular}
+\caption{Data dictionary and summary statistics for total demand dataset}
+\label{metadata}
+\end{table}

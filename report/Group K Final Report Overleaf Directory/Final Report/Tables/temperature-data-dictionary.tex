@@ -1,0 +1,40 @@
+\begin{table}[ht]
+\centering
+\setlength{\tabcolsep}{4pt} % Adjust the space between columns
+\renewcommand{\arraystretch}{1.5}  % Increase the space between rows
+\small % or \scriptsize or \footnotesize to reduce the font size
+\begin{tabular}{@{}lp{2.3cm}llp{3.2cm}@{}} % Adjust column widths
+\toprule
+Field Name & Description & Data Type & Example & Statistics \\
+\midrule
+DATETIME & The UTC date-time of the demand recording in 30 min increments & DATETIME & 2010-01-01 00:00:00& 
+\textbullet\ Maximum: 2021-03-18 00:00:00\newline
+\textbullet\ Minimum: 2010-01-01 00:00:00\newline
+\textbullet\ NULL Count: 0 \\
+
+TEMPERATURE & The recorded temperature for that location & Float & 5561.21 & 
+\textbullet\ Maximum: 44.7\newline
+\textbullet\ Minimum: -1.3\newline
+\textbullet\ Mean: 18.7\newline
+\textbullet\ Std. Dev.: 6.0\newline
+\textbullet\ NULL Count: 0 \\
+
+state & The Australian state the reading corresponds to & \parbox[t]{2.3cm}{Enumerated String:\newline
+\textbullet\ QLD\newline
+\textbullet\ NSW\newline
+\textbullet\ VIC\newline
+\textbullet\ SA} & QLD &
+\textbullet\ NULL Count: 0 \\
+
+LOCATION & Location description of the reading & \parbox[t]{2.3cm}{Enumerated String:\newline
+\textbullet\ Brisbane Archerfield Airport\newline
+\textbullet\ Bankstown\newline
+\textbullet\ Melbourne (Olympic Park)\newline
+\textbullet\ Adelaide (Kent Town)} & Bankstown &
+\textbullet\ NULL Count: 0 \\
+
+\bottomrule
+\end{tabular}
+\caption{Data dictionary and summary statistics for temperature dataset}
+\label{metadata}
+\end{table}

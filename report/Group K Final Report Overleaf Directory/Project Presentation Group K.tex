@@ -1,0 +1,78 @@
+\documentclass{beamer}
+\beamertemplatenavigationsymbolsempty
+\usepackage{graphicx}
+
+\title{A COMPARISON OF UNI- AND MULTI-VARIATE CASES OF SHALLOW AND DEEP NEURAL NETWORKS FOR SHORT TERM ELECTRICAL LOAD FORECASTING\\[-0.5cm]}
+\author{Doug Smithers (z5135363)\newline
+Tom Bernstein (z3478832)\newline
+Daniel Sartor (z5350306)}
+\institute{\includegraphics[width=3cm]{unsw-logo}}
+\date{23 April 2024}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Presentation Overview}
+\begin{itemize}
+    \item Background and Project Description (Tom)
+    \item Pre-Processing and Feature Engineering (Daniel)
+    \item Model Description, Results and Conclusion (Doug)
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Background}
+
+Accurate short term load forecasts enable: \newline
+
+\begin{itemize}
+    \item Efficient load dispatching
+    \item Energy transfer scheduling
+    \item Operational costs savings
+    \item Outage prevention
+    \item Safety improvements
+    \item Emission reduction
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Neural Networks}
+A number different Neural Network architectures have been applied to short term load forecasting problems. Some examples include: \newline
+
+
+\begin{itemize}
+    \item \textbf{Multi-Layer Perceptron Networks}
+    \item Recurrent Neural Networks
+    \item \textbf{Long Short Term Memory Networks}
+    \item Gated Recurrent Units
+    \item One-Dimensional Convolutional Neural Networks
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}{Bi-Directional Long Short Term Memory Networks}
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{Final Report//Figures/BDLSTM_Presentation.png}
+    \caption{The structure of a bi-directional long short term memory network (left) and the composition of the LSTM cell (right) (Chandra et al. 2021).}
+    \label{fig:enter-label}
+\end{figure}
+
+
+
+\end{frame}
+
+\begin{frame}{Project Scope}
+In total, 8 models were run for this project:
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\linewidth]{Final Report//Figures/NeuralNetworks.drawio.png} 
+
+\end{figure}
+\end{frame}
+
+\end{document}

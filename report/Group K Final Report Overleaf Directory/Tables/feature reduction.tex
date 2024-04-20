@@ -1,0 +1,15 @@
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrr}
+\toprule
+Model & Training Minutes & Count of Variables & Validation MAPE \\
+\midrule
+$\lambda_{L1}=0.1$ & 5:09 & 66 & 4.68 \\
+$\lambda_{L1}=0.0$ & 5:09 & 66 & 2.58 \\
+$\epsilon>10^{-3}$ & 4:54 & 51 & 2.80 \\
+$\epsilon>10^{-2}$ & 4:43 & 19 & 3.01 \\
+\bottomrule
+\end{tabular}
+\caption{The feature reduction results of the four models reviewed. The $\lambda_{L1}$ values represent the weight of the L1 regularisation, with $\lambda_{L1}=0$ indicating no regularisation. The $\epsilon$ values represent the minimum sum of coefficients for a variable to be included in the model.}
+\label{feat-red}
+\end{table}

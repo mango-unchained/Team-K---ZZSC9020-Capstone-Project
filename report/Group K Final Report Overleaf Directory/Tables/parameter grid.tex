@@ -1,0 +1,14 @@
+\begin{table}[H]
+\centering
+\begin{tabular}{lr}
+\toprule
+Hyperparameter & Values Searched \\
+\midrule
+Batch Size & $\left[2^{8}, 2^{9}, 2^{10}\right]$ \\
+Optimizer Weight Decay & $\left[10^{-3}, 10^{-4}, 10^{-5}\right]$ \\
+Optimizer $\beta_1$ & $\left[0.8, 0.9, 0.95\right]$ \\
+\bottomrule
+\end{tabular}
+\caption{The hyperparameter matrix used in the grid search. The optimiser values were passed to the Adam optimiser, and the batch size was passed to the models' fit methods.}
+\label{param-grid}
+\end{table}

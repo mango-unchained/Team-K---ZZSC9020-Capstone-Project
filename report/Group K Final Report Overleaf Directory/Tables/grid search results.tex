@@ -1,0 +1,13 @@
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrr}
+\toprule
+Model & Batch Size & Optimizer Weight Decay & Optimizer $\beta_1$ \\
+\midrule
+MLP & $2^{8}$ & $10^{-5}$ & 0.95 \\
+BD-LSTM & $2^{8}$ & $10^{-5}$ & 0.80 \\
+\bottomrule
+\end{tabular}
+\caption{The optimal hyperparameters for each model found in the grid search. The optimiser values were passed to the Adam optimiser, and the batch size was passed to the models' fit methods.}
+\label{gsearch-res}
+\end{table}

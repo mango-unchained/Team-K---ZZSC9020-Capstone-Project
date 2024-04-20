@@ -1,0 +1,19 @@
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrr|r}
+\toprule
+Model & 1 Hour & 24 Hour & Mean & Mean Rank \\
+\midrule
+Multivariate Shallow MLP & 3 & 1 & 1 & 1.67 \\
+Univariate Deep MLP & 2 & 3 & 2 & 2.33 \\
+Multivariate Deep MLP & 4 & 2 & 3 & 3.00 \\
+Univariate Shallow MLP & 1 & 5 & 4 & 3.33 \\
+Multivariate Shallow BD-LSTM & 5 & 4 & 5 & 4.67 \\
+Multivariate Deep BD-LSTM & 7 & 6 & 6 & 6.33 \\
+Univariate Deep BD-LSTM & 6 & 8 & 7 & 7.00 \\
+Univariate Shallow BD-LSTM & 8 & 7 & 8 & 7.67 \\
+\bottomrule
+\end{tabular}
+\caption{Ranking by MAPE results for the eight models. The tests covered the one- and 24-hour ahead prediction horizons and their batch-wise mean. The models are ordered by their mean ranking.}
+\label{mape-ranks}
+\end{table}

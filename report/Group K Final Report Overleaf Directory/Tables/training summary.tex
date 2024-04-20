@@ -1,0 +1,19 @@
+\begin{table}[H]
+\centering
+\begin{tabular}{lrr}
+\toprule
+Model & Epochs & Total Training Hours \\
+\midrule
+Multivariate Deep BD-LSTM & 189 & 9:53 \\
+Univariate Deep BD-LSTM & 150 & 7:07 \\
+Multivariate Shallow BD-LSTM & 511 & 9:57 \\
+Univariate Shallow BD-LSTM & 315 & 4:38 \\
+Univariate Deep MLP & 3950 & 1:44 \\
+Multivariate Deep MLP & 4000 & 1:48 \\
+Multivariate Shallow MLP & 10000 & 2:01 \\
+Univariate Shallow MLP & 10500 & 1:57 \\
+\bottomrule
+\end{tabular}
+\caption{The number of epochs completed and hours of training performed for each model. Models completing significantly more than two hours of training were run on a better suited machine to accelerate the process.}
+\label{tsummary}
+\end{table}

@@ -1,0 +1,19 @@
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrr|r}
+\toprule
+Model & 1 Hour & 24 Hour & Mean & Mean Rank \\
+\midrule
+Multivariate Shallow MLP & 3 & 1 & 1 & 1.67 \\
+Multivariate Deep MLP & 4 & 2 & 2 & 2.67 \\
+Univariate Deep MLP & 2 & 4 & 3 & 3.00 \\
+Univariate Shallow MLP & 1 & 6 & 5 & 4.00 \\
+Multivariate Shallow BD-LSTM & 5 & 3 & 4 & 4.00 \\
+Multivariate Deep BD-LSTM & 6 & 5 & 6 & 5.67 \\
+Univariate Deep BD-LSTM & 7 & 7 & 7 & 7.00 \\
+Univariate Shallow BD-LSTM & 8 & 8 & 8 & 8.00 \\
+\bottomrule
+\end{tabular}
+\caption{Ranking by RMSE results for the eight models. The tests covered the one- and 24-hour ahead prediction horizons and their batch-wise mean. The models are ordered by their mean ranking.}
+\label{rmse-ranks}
+\end{table}
